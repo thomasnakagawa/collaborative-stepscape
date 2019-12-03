@@ -13,11 +13,14 @@ public class GameManager : MonoBehaviour
 
     private LinkedList<Footstep> Footsteps;
 
+    public bool skipNetworkSteps = false;
+
     // Start is called before the first frame update
     void Start()
     {
         footstepSoundPlayer = FindObjectOfType<FootstepSoundPlayer>();
-        StartCoroutine(NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched));
+        if (!skipNetworkSteps)
+            StartCoroutine(NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched));
     }
 
     private void Update()

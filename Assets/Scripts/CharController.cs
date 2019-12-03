@@ -26,6 +26,8 @@ public class CharController : MonoBehaviour
     }
     private List<KeyBinding> KeyBindings;
 
+    private Collider2D[] colliders = new Collider2D[1];
+
     // Start is called before the first frame update
     void Start()
     {
@@ -66,7 +68,14 @@ public class CharController : MonoBehaviour
 
         // play step sound and add it to db
         FootstepCalculations.ConfigureAudioSourceForVelocity(audioSource, stepVelocity);
-        audioSource.PlayOneShot(FootStepSound);
+        var footstepClip = FootstepCalculations.FootstepSoundAtPosition(transform.position, colliders);
+
+        if (footstepClip != null)
+        {
+            audioSource.clip = footstepClip;
+        }
+
+        audioSource.Play();
         if (networkWriteEnabled)
         {
             var newFS = new Footstep(transform.position.x, transform.position.y, Time.time, stepVelocity);

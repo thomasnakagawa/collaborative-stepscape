@@ -18,4 +18,17 @@ public static class FootstepCalculations
         audioSource.pitch = VelocityToPitch(velocity);
         audioSource.volume = VelocityToVolume(velocity);
     }
+
+    public static AudioClip FootstepSoundAtPosition(Vector3 position, Collider2D[] colliders)
+    {
+        if (Physics2D.OverlapCircleNonAlloc(position, 0.1f, colliders) > 0)
+        {
+            var region = colliders[0].GetComponent<SurfaceRegion>();
+            if (region != null)
+            {
+                return region.Sound;
+            }
+        }
+        return null;
+    }
 }
