@@ -7203,9 +7203,13 @@ MonoBehaviour:
 
 
     Press the R key to hear this introduction again.'
-  AboutText: 'About. Stepscape Overdub was created by float_oat for HODUR sound based
-    jam, which was Hosted by Feldo on Itch.io. This game uses sounds from freesound.org,
-    links are available in the description.
+  AboutText: 'About:
+
+    Stepscape Overdub was created by float_oat for HODUR sound based jam, which was
+    Hosted by Feldo on Itch.io.
+
+
+    This game uses sounds from freesound.org, links are available in the description.
 
 
     The text-to-speech audio was created on notevibes.com
@@ -9033,6 +9037,7 @@ MonoBehaviour:
   StepTime: 0.1
   StartStepSound: {fileID: 8300000, guid: 10945331628dc4a96b9fd1477a2d7906, type: 3}
   FootStepSound: {fileID: 8300000, guid: 1699a55a3da2645e1a337f389b8e2a75, type: 3}
+  PanSpread: 0.65
   networkWriteEnabled: 1
 --- !u!4 &431547374
 Transform:
@@ -11140,7 +11145,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_textAlignment: 513
+  m_textAlignment: 257
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0

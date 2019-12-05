@@ -14,6 +14,7 @@ public class CharController : MonoBehaviour
     [Header("Footstep sound")]
     [SerializeField] private AudioClip StartStepSound = default;
     [SerializeField] private AudioClip FootStepSound = default;
+    [SerializeField] private float PanSpread = 1f;
 
     AudioSource audioSource;
 
@@ -97,9 +98,24 @@ public class CharController : MonoBehaviour
         // move player object
         Vector3 oldPosition = transform.position;
         Vector3 newPosition = oldPosition + (direction * StepDistance);
+
+        float startingPan = 0f;
+        float endingPan = 0f;
+        if (keyCode == KeyCode.LeftArrow)
+        {
+            startingPan = -PanSpread;
+            endingPan = PanSpread;
+        }
+        if (keyCode == KeyCode.RightArrow)
+        {
+            startingPan = PanSpread;
+            endingPan = -PanSpread;
+        }
+
         float elapsedTime = 0f;
         while (elapsedTime < StepTime)
         {
+            audioSource.panStereo = Mathf.Lerp(startingPan, endingPan, elapsedTime / StepTime);
             transform.position = Vector3.Lerp(oldPosition, newPosition, elapsedTime / StepTime);
             elapsedTime += Time.deltaTime;
             yield return null;
