@@ -3,10 +3,10 @@ public class Footstep
 {
     public string posX;
     public string posY;
-    public string time;
+    public float time;
     public string velo;
 
-    public Footstep(string posX, string posY, string time, string velo)
+    public Footstep(string posX, string posY, float time, string velo)
     {
         this.posX = posX;
         this.posY = posY;

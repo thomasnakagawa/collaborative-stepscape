@@ -166,7 +166,7 @@ public class GameManager : MonoBehaviour
         if (GameState == GameStates.GAMEPLAY)
         {
             GameElapsedTime += Time.deltaTime;
-            while (Footsteps.Count > 0 && GameElapsedTime > float.Parse(Footsteps.First.Value.time))
+            while (Footsteps.Count > 0 && GameElapsedTime > Footsteps.First.Value.time)
             {
                 Footstep fsToPlay = Footsteps.First.Value;
                 var footstepSoundPlayer = ObjectTub.ObjectPool.TakeObjectFromTub(FootstepPlayerPrefab).transform.RequireComponent<FootstepSoundPlayer>();

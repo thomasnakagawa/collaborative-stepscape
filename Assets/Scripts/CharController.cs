@@ -89,7 +89,7 @@ public class CharController : MonoBehaviour
             var newFS = new Footstep(
                 transform.position.x.ToString("0.0"),
                 transform.position.y.ToString("0.0"),
-                gameManager.GameElapsedTime.ToString("0.000"),
+                gameManager.GameElapsedTime,
                 stepVelocity.ToString("0.00")
             );
             StartCoroutine(NetworkHandler.PostNewFootstep(newFS));
