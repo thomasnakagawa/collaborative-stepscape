@@ -7,47 +7,55 @@ using OatsUtil;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Speech")]
     [SerializeField] private AudioClip LoadingSound;
     [SerializeField] private AudioClip IntroSound;
+    [SerializeField] private AudioClip AboutSound;
+
+    [Header("Text content")]
+    [SerializeField] private TMPro.TMP_Text TextElement;
+    [TextArea] [SerializeField] private string LoadingText;
+    [TextArea] [SerializeField] private string IntroText;
+    [TextArea] [SerializeField] private string AboutText;
 
     [SerializeField] private GameObject FootstepPlayerPrefab;
 
+    public enum GameStates
+    {
+        LOADING, INTRO, GAMEPLAY
+    }
+    public GameStates GameState { get; private set; }
+
     private AudioSource audioSource;
 
-    private bool GameHasStarted = false;
-    private float GameElapsedTime = 0f;
-
-    //private FootstepSoundPlayer footstepSoundPlayer;
+    public float GameElapsedTime { get; private set; } = 0f;
 
     private LinkedList<Footstep> Footsteps;
 
-    public bool skipNetworkSteps = false;
-
-    // Start is called before the first frame update
     void Start()
     {
         audioSource = this.RequireComponent<AudioSource>();
 
-        //footstepSoundPlayer = SceneUtils.FindComponentInScene<FootstepSoundPlayer>();
-        if (!skipNetworkSteps)
+        GameState = GameStates.LOADING;
+        if (TextElement == null)
         {
-            StartCoroutine(OnStartSequence());
+            throw new MissingReferenceException("Text element required");
         }
+        StartCoroutine(OnStartSequence());
     }
 
     private IEnumerator OnStartSequence()
     {
-        audioSource.loop = true;
-        audioSource.clip = LoadingSound;
-        audioSource.Play();
+        ShowLoading();
         yield return null;
         yield return NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched);
     }
 
     private void OnDataFetched(string footstepJSON)
     {
-        audioSource.loop = false;
-        audioSource.Stop();
+        ShowIntro();
+
+        // parse the data
         List<Footstep> fetchedSteps = ParseFootstepData(footstepJSON);
         Debug.Log("Fetched " + fetchedSteps.Count + " steps");
 
@@ -59,13 +67,12 @@ public class GameManager : MonoBehaviour
         {
             Footsteps.AddLast(fetchedSteps[i]);
         }
-
-        GameHasStarted = true;
     }
 
     private List<Footstep> ParseFootstepData(string footstepJSON)
     {
         // todo: data validation and error handling
+        // todo: run in background? this could be long
         List<Footstep> FetchedFootsteps = new List<Footstep>();
         JSONObject resultObj = JSONNode.Parse(footstepJSON).AsObject;
         foreach (string key in resultObj.Keys)
@@ -84,9 +91,56 @@ public class GameManager : MonoBehaviour
         return FetchedFootsteps;
     }
 
+    private void ShowLoading()
+    {
+        audioSource.Stop();
+        audioSource.loop = true;
+        audioSource.clip = LoadingSound;
+        audioSource.Play();
+        TextElement.text = LoadingText;
+    }
+
+    private void ShowIntro()
+    {
+        audioSource.Stop();
+        audioSource.loop = false;
+        audioSource.PlayOneShot(IntroSound);
+        TextElement.text = IntroText;
+        GameState = GameStates.INTRO;
+    }
+
+    private void ShowAbout()
+    {
+        audioSource.Stop();
+        audioSource.loop = false;
+        audioSource.PlayOneShot(AboutSound);
+        TextElement.text = AboutText;
+    }
+
     private void Update()
     {
-        if (GameHasStarted)
+        if (GameState == GameStates.INTRO)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                // start game
+                // stop intro sounds
+                audioSource.Stop();
+                TextElement.text = "";
+                GameState = GameStates.GAMEPLAY;
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ShowIntro();
+            }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                ShowAbout();
+            }
+        }
+
+        if (GameState == GameStates.GAMEPLAY)
         {
             GameElapsedTime += Time.deltaTime;
             while (Footsteps.Count > 0 && GameElapsedTime > Footsteps.First.Value.time)

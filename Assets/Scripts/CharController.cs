@@ -28,9 +28,13 @@ public class CharController : MonoBehaviour
 
     private Collider2D[] colliders = new Collider2D[1];
 
+    private GameManager gameManager;
+
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = SceneUtils.FindComponentInScene<GameManager>();
+
         audioSource = GetComponent<AudioSource>();
 
         KeyBindings = new List<KeyBinding>();
@@ -43,12 +47,15 @@ public class CharController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        foreach (var keyBinding in KeyBindings)
+        if (gameManager.GameState == GameManager.GameStates.GAMEPLAY)
         {
-            if (Input.GetKeyDown(keyBinding.Key))
+            foreach (var keyBinding in KeyBindings)
             {
-                StartCoroutine(Step(keyBinding.Key, keyBinding.Direction));
-            } 
+                if (Input.GetKeyDown(keyBinding.Key))
+                {
+                    StartCoroutine(Step(keyBinding.Key, keyBinding.Direction));
+                }
+            }
         }
     }
 
@@ -78,7 +85,12 @@ public class CharController : MonoBehaviour
         audioSource.Play();
         if (networkWriteEnabled)
         {
-            var newFS = new Footstep(transform.position.x, transform.position.y, Time.time, stepVelocity);
+            var newFS = new Footstep(
+                transform.position.x,
+                transform.position.y,
+                gameManager.GameElapsedTime,
+                stepVelocity
+            );
             StartCoroutine(NetworkHandler.PostNewFootstep(newFS));
         }
 
