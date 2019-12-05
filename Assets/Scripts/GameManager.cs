@@ -103,10 +103,10 @@ public class GameManager : MonoBehaviour
             var keyObj = resultObj[key];
 
             Footstep newFootStep = new Footstep(
-                keyObj["posX"].AsFloat,
-                keyObj["posY"].AsFloat,
-                keyObj["time"].AsFloat,
-                keyObj["velo"].AsFloat
+                keyObj["posX"],
+                keyObj["posY"],
+                keyObj["time"],
+                keyObj["velo"]
             );
 
             FetchedFootsteps.Add(newFootStep);
@@ -166,11 +166,11 @@ public class GameManager : MonoBehaviour
         if (GameState == GameStates.GAMEPLAY)
         {
             GameElapsedTime += Time.deltaTime;
-            while (Footsteps.Count > 0 && GameElapsedTime > Footsteps.First.Value.time)
+            while (Footsteps.Count > 0 && GameElapsedTime > float.Parse(Footsteps.First.Value.time))
             {
                 Footstep fsToPlay = Footsteps.First.Value;
                 var footstepSoundPlayer = ObjectTub.ObjectPool.TakeObjectFromTub(FootstepPlayerPrefab).transform.RequireComponent<FootstepSoundPlayer>();
-                footstepSoundPlayer.PlayAtPosition(fsToPlay.posX, fsToPlay.posY, fsToPlay.velo);
+                footstepSoundPlayer.PlayAtPosition(float.Parse(fsToPlay.posX), float.Parse(fsToPlay.posY), float.Parse(fsToPlay.velo));
                 Footsteps.RemoveFirst();
             }
         }

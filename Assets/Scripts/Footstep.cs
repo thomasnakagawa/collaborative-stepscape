@@ -1,12 +1,12 @@
 ﻿[System.Serializable]
 public class Footstep
 {
-    public float posX;
-    public float posY;
-    public float time;
-    public float velo;
+    public string posX;
+    public string posY;
+    public string time;
+    public string velo;
 
-    public Footstep(float posX, float posY, float time, float velo)
+    public Footstep(string posX, string posY, string time, string velo)
     {
         this.posX = posX;
         this.posY = posY;
