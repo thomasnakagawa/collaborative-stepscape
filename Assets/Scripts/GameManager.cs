@@ -32,9 +32,13 @@ public class GameManager : MonoBehaviour
 
     private LinkedList<Footstep> Footsteps;
 
+    private int fetchedTime = 0;
+    private int fetchRange = 8;
+
     void Start()
     {
         audioSource = this.RequireComponent<AudioSource>();
+        Footsteps = new LinkedList<Footstep>();
 
         GameState = GameStates.LOADING;
         if (TextElement == null)
@@ -47,22 +51,41 @@ public class GameManager : MonoBehaviour
     private IEnumerator OnStartSequence()
     {
         ShowLoading();
-        yield return null;
-        yield return NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched);
+        yield return new WaitForSeconds(0.2f);
+        yield return FetchAtInterval();
+    }
+
+    private IEnumerator FetchAtInterval()
+    {
+        yield return FetchNextFootsteps();
+        yield return new WaitForSeconds(fetchRange / 2);
+        while (true)
+        {
+            yield return FetchNextFootsteps();
+            yield return new WaitForSeconds(fetchRange);
+        }
+    }
+
+    private IEnumerator FetchNextFootsteps()
+    {
+        string query = string.Format("orderBy=\"time\"&startAt={0}&endAt={1}", fetchedTime, fetchedTime + fetchRange);
+        yield return NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json?" + query, OnDataFetched);
+        fetchedTime += fetchRange;
     }
 
     private void OnDataFetched(string footstepJSON)
     {
-        ShowIntro();
+        if (GameState == GameStates.LOADING)
+        {
+            ShowIntro();
+        }
 
         // parse the data
         List<Footstep> fetchedSteps = ParseFootstepData(footstepJSON);
         Debug.Log("Fetched " + fetchedSteps.Count + " steps");
 
-
         fetchedSteps = fetchedSteps.OrderBy(footstep => footstep.time).ToList();
 
-        Footsteps = new LinkedList<Footstep>();
         for (int i = 0; i < fetchedSteps.Count; i++)
         {
             Footsteps.AddLast(fetchedSteps[i]);
