@@ -17,7 +17,6 @@ public static class NetworkHandler
 
     private static IEnumerator PostRequest(string URL, string data)
     {
-        Debug.Log("Posting " + data);
         UnityWebRequest postReq = new UnityWebRequest(URL, "POST");
         byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(data);
         postReq.uploadHandler = (UploadHandler)new UploadHandlerRaw(jsonToSend);
@@ -30,14 +29,11 @@ public static class NetworkHandler
         {
             Debug.Log("Error While Sending: " + postReq.error);
         }
-        else
-        {
-            Debug.Log("Received: " + postReq.downloadHandler.text);
-        }
     }
 
     public static IEnumerator GetRequest(string URL, Action<string> then)
     {
+        //yield return new WaitForSeconds(10f);
         UnityWebRequest getReq = new UnityWebRequest(URL, "GET");
         getReq.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
         yield return getReq.SendWebRequest();
@@ -48,7 +44,7 @@ public static class NetworkHandler
         }
         else
         {
-            Debug.Log("Received: " + getReq.downloadHandler.text);
+            //Debug.Log("Received: " + getReq.downloadHandler.text);
             then.Invoke(getReq.downloadHandler.text);
         }
     }

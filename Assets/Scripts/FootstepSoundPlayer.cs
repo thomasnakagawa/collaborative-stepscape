@@ -2,27 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using ObjectTub;
+using OatsUtil;
 
-public class FootstepSoundPlayer : MonoBehaviour
+public class FootstepSoundPlayer : PoolableObject
 {
     [SerializeField] private AudioClip DefaultFootstepSound = default;
     private AudioSource audioSource;
     private Collider2D[] colliders = new Collider2D[1];
-    // Start is called before the first frame update
-    void Start()
+
+    void Awake()
     {
-        audioSource = GetComponent<AudioSource>();
+        audioSource = this.RequireComponent<AudioSource>();
 
         if (DefaultFootstepSound != null)
         {
             audioSource.clip = DefaultFootstepSound;
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void PlayAtPosition(float x, float y, float velocity)
@@ -37,5 +33,25 @@ public class FootstepSoundPlayer : MonoBehaviour
         }
 
         audioSource.Play();
+
+        float soundTime = audioSource.clip.length * audioSource.pitch;
+        StartCoroutine(ReleaseAfterTime(soundTime));
+    }
+
+    private IEnumerator ReleaseAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+        ObjectPool.PutObjectBackInTub(gameObject);
+    }
+
+    public override void InitializeForUse()
+    {
+        // nothing needed here
+    }
+
+    public override void PutAway()
+    {
+        // nothing needed here
+        //ObjectPool.put
     }
 }

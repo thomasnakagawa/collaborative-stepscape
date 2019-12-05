@@ -3,13 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
 using UnityEngine;
+using OatsUtil;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private AudioClip LoadingSound;
+    [SerializeField] private AudioClip IntroSound;
+
+    [SerializeField] private GameObject FootstepPlayerPrefab;
+
+    private AudioSource audioSource;
+
     private bool GameHasStarted = false;
     private float GameElapsedTime = 0f;
 
-    private FootstepSoundPlayer footstepSoundPlayer;
+    //private FootstepSoundPlayer footstepSoundPlayer;
 
     private LinkedList<Footstep> Footsteps;
 
@@ -18,27 +26,28 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        footstepSoundPlayer = FindObjectOfType<FootstepSoundPlayer>();
+        audioSource = this.RequireComponent<AudioSource>();
+
+        //footstepSoundPlayer = SceneUtils.FindComponentInScene<FootstepSoundPlayer>();
         if (!skipNetworkSteps)
-            StartCoroutine(NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched));
+        {
+            StartCoroutine(OnStartSequence());
+        }
     }
 
-    private void Update()
+    private IEnumerator OnStartSequence()
     {
-        if (GameHasStarted)
-        {
-            GameElapsedTime += Time.deltaTime;
-            while (Footsteps.Count > 0 && GameElapsedTime > Footsteps.First.Value.time)
-            {
-                Footstep fsToPlay = Footsteps.First.Value;
-                footstepSoundPlayer.PlayAtPosition(fsToPlay.posX, fsToPlay.posY, fsToPlay.velo);
-                Footsteps.RemoveFirst();
-            }
-        }
+        audioSource.loop = true;
+        audioSource.clip = LoadingSound;
+        audioSource.Play();
+        yield return null;
+        yield return NetworkHandler.GetRequest(Secrets.DB_URL + "/footsteps.json", OnDataFetched);
     }
 
     private void OnDataFetched(string footstepJSON)
     {
+        audioSource.loop = false;
+        audioSource.Stop();
         List<Footstep> fetchedSteps = ParseFootstepData(footstepJSON);
         Debug.Log("Fetched " + fetchedSteps.Count + " steps");
 
@@ -73,5 +82,20 @@ public class GameManager : MonoBehaviour
             FetchedFootsteps.Add(newFootStep);
         }
         return FetchedFootsteps;
+    }
+
+    private void Update()
+    {
+        if (GameHasStarted)
+        {
+            GameElapsedTime += Time.deltaTime;
+            while (Footsteps.Count > 0 && GameElapsedTime > Footsteps.First.Value.time)
+            {
+                Footstep fsToPlay = Footsteps.First.Value;
+                var footstepSoundPlayer = ObjectTub.ObjectPool.TakeObjectFromTub(FootstepPlayerPrefab).transform.RequireComponent<FootstepSoundPlayer>();
+                footstepSoundPlayer.PlayAtPosition(fsToPlay.posX, fsToPlay.posY, fsToPlay.velo);
+                Footsteps.RemoveFirst();
+            }
+        }
     }
 }
